@@ -19,7 +19,6 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 class ProductsWithImageExport implements FromCollection, WithHeadings, WithMapping, WithDrawings, WithColumnWidths, WithStyles
 {
     protected $products;
-    protected $rowIndex = 2; // Mulai dari baris 2 (setelah header)
 
     public function __construct($products = null)
     {
@@ -40,7 +39,7 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
             'NO',
             'ITEM ID',
             'NAMA PRODUK',
-            'NAMA BARANG WINCP',
+            'NAMA BARANG',
             'SPESIFIKASI',
             'BAHAN',
             'WARNA',
@@ -69,7 +68,7 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
             $product->description ?? '-',
             $product->additional_info ?? '-',
             $product->status == 'active' ? 'Aktif' : 'Tidak Aktif',
-            ' ', // Placeholder untuk gambar
+            '', // Placeholder untuk gambar
             $product->created_at ? $product->created_at->format('d/m/Y H:i') : '-',
         ];
     }
@@ -77,15 +76,20 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
     public function drawings()
     {
         $drawings = [];
-        $currentRow = 2;
+        $currentRow = 2; // Mulai dari baris 2 (setelah header)
 
         foreach ($this->collection() as $index => $product) {
-            // Cek gambar
             $imagePath = null;
-            if ($product->image && file_exists(storage_path('app/public/' . $product->image))) {
-                $imagePath = storage_path('app/public/' . $product->image);
-            } elseif ($product->image && file_exists(storage_path('app/' . $product->image))) {
-                $imagePath = storage_path('app/' . $product->image);
+
+            // Cek gambar di berbagai lokasi
+            if ($product->image) {
+                if (file_exists(storage_path('app/public/' . $product->image))) {
+                    $imagePath = storage_path('app/public/' . $product->image);
+                } elseif (file_exists(storage_path('app/' . $product->image))) {
+                    $imagePath = storage_path('app/' . $product->image);
+                } elseif (file_exists(public_path($product->image))) {
+                    $imagePath = public_path($product->image);
+                }
             }
 
             if ($imagePath && file_exists($imagePath)) {
@@ -97,8 +101,8 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
                     $drawing->setHeight(80);
                     $drawing->setWidth(80);
                     $drawing->setCoordinates('K' . $currentRow);
-                    $drawing->setOffsetX(10);
-                    $drawing->setOffsetY(10);
+                    $drawing->setOffsetX(15);
+                    $drawing->setOffsetY(5);
                     $drawings[] = $drawing;
                 } catch (\Exception $e) {
                     // Skip jika gambar corrupt
@@ -114,23 +118,30 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
     public function columnWidths(): array
     {
         return [
-            'A' => 5,      // NO
-            'B' => 15,     // ITEM ID
-            'C' => 25,     // NAMA PRODUK
-            'D' => 25,     // NAMA BARANG
-            'E' => 35,     // SPESIFIKASI
-            'F' => 15,     // BAHAN
-            'G' => 15,     // WARNA
-            'H' => 30,     // DESKRIPSI
-            'I' => 25,     // KETERANGAN
-            'J' => 12,     // STATUS
-            'K' => 15,     // GAMBAR
-            'L' => 20,     // CREATED AT
+            'A' => 6,   // NO
+            'B' => 15,  // ITEM ID
+            'C' => 30,  // NAMA PRODUK
+            'D' => 25,  // NAMA BARANG
+            'E' => 40,  // SPESIFIKASI
+            'F' => 15,  // BAHAN
+            'G' => 15,  // WARNA
+            'H' => 35,  // DESKRIPSI
+            'I' => 30,  // KETERANGAN
+            'J' => 12,  // STATUS
+            'K' => 15,  // GAMBAR (diperlebar untuk gambar)
+            'L' => 18,  // CREATED AT
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
+        $highestRow = $sheet->getHighestRow();
+
+        // Set tinggi baris untuk setiap baris data
+        for ($i = 2; $i <= $highestRow; $i++) {
+            $sheet->getRowDimension($i)->setRowHeight(70);
+        }
+
         // Style header
         $sheet->getStyle('A1:L1')->applyFromArray([
             'font' => [
@@ -148,15 +159,8 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
             ],
         ]);
 
-        // Set tinggi baris header
-        $sheet->getRowDimension(1)->setRowHeight(25);
-
-        // Style untuk baris data
-        $lastRow = $sheet->getHighestRow();
-        $sheet->getStyle('A2:L' . $lastRow)->applyFromArray([
-            'alignment' => [
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
+        // Border untuk semua cell
+        $sheet->getStyle('A1:L' . $highestRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -165,13 +169,16 @@ class ProductsWithImageExport implements FromCollection, WithHeadings, WithMappi
             ],
         ]);
 
-        // Set tinggi baris untuk data (agar gambar muat)
-        for ($i = 2; $i <= $lastRow; $i++) {
-            $sheet->getRowDimension($i)->setRowHeight(70);
-        }
-
         // Wrap text untuk kolom spesifikasi dan deskripsi
         $sheet->getStyle('E:H')->getAlignment()->setWrapText(true);
+
+        // Vertical center untuk semua data
+        $sheet->getStyle('A2:L' . $highestRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+
+        // Horizontal center untuk kolom NO, ITEM ID, STATUS
+        $sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('B2:B' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('J2:J' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         return [];
     }

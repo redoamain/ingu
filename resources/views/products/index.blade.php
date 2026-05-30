@@ -19,6 +19,14 @@
             <a href="{{ route('products.index') }}" class="btn">RESET</a>
         @endif
     </form>
+
+      <!-- Tombol Export -->
+    <div style="margin-top: 15px;">
+        <font face="Arial" size="2">Export Data:</font>
+        {{-- <a href="{{ route('products.export') }}" class="btn" style="background-color: #008000; color: white;">📊 EXPORT EXCEL</a> --}}
+         <a href="{{ route('products.export.image') }}" class="btn" style="background-color: #008000; color: white;">📊 EXPORT EXCEL</a>
+        {{-- <a href="{{ route('products.export.csv') }}" class="btn">📄 EXPORT CSV</a> --}}
+    </div>
 </div>
 
 <!-- Products Grid - Card Layout -->
