@@ -5,7 +5,7 @@
 @section('content')
 <!-- Header -->
 <div align="center">
-    <h2><font face="Arial" color="#000080">PRODUCT CATALOG</font></h2>
+    <h2><font face="Arial" color="#000080">DATA GUDANG</font></h2>
     <hr width="30%">
 </div>
 

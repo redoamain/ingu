@@ -202,9 +202,9 @@
     </div>
 
     <!-- Footer sederhana -->
-    <div class="footer">
+    {{-- <div class="footer">
         &copy; 2000 - {{ date('Y') }} citiplumb<br>
         <font size="1">Best viewed with Internet Explorer 6.0+</font>
-    </div>
+    </div> --}}
 </body>
 </html>

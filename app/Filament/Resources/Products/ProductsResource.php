@@ -19,7 +19,7 @@ use App\Exports\ProductsTemplateExport;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\ProductsExport;
 use App\Exports\ProductsWithImageExport;
-use Maatwebsite\Excel\Facades\Excel; 
+use Maatwebsite\Excel\Facades\Excel;
 class ProductsResource extends Resource
 {
     protected static ?string $model = Product::class;
@@ -48,13 +48,13 @@ class ProductsResource extends Resource
     {
         return ProductsTable::configure($table)
             ->headerActions([
-                 Action::make('export_excel')
-                    ->label('Export Excel (with URL)')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->color('success')
-                    ->action(function () {
-                        return Excel::download(new ProductsExport(), 'products_' . date('Y-m-d_His') . '.xlsx');
-                    }),
+                //  Action::make('export_excel')
+                //     ->label('Export Excel (with URL)')
+                //     ->icon('heroicon-o-document-arrow-down')
+                //     ->color('success')
+                //     ->action(function () {
+                //         return Excel::download(new ProductsExport(), 'products_' . date('Y-m-d_His') . '.xlsx');
+                //     }),
 
                 // Tombol Export Excel (dengan gambar embed)
                 Action::make('export_excel_image')
